@@ -1,7 +1,7 @@
 import os
 import time
 
-file_path = os.getenv("LOG_PATH", "/data/log.txt")
+file_path = os.getenv("LOG_PATH", "./data/log.txt")
 
 os.makedirs(os.path.dirname(file_path), exist_ok=True)
 
