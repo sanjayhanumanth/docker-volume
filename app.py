@@ -1,23 +1,35 @@
+from flask import Flask, request, jsonify
 import os
-import time
 
-file_path = os.getenv("LOG_PATH", "./data/log.txt")
+app = Flask(__name__)
 
-os.makedirs(os.path.dirname(file_path), exist_ok=True)
+FILE_PATH = os.getenv("FILE_PATH", "./data/notes.txt")
 
-counter = 1
+# Ensure directory exists
+os.makedirs(os.path.dirname(FILE_PATH), exist_ok=True)
 
-while True:
-    try:
-        with open(file_path, "a") as f:
-            line = f"{counter} - Hello from Docker Volume!\n"
-            f.write(line)
+@app.route("/")
+def home():
+    return "Notes App Running 🚀"
 
-        print(line.strip(), flush=True)  # optional (for docker logs)
+@app.route("/add", methods=["POST"])
+def add_note():
+    note = request.json.get("note")
 
-        counter += 1
-        time.sleep(5)
+    with open(FILE_PATH, "a") as f:
+        f.write(note + "\n")
 
-    except Exception as e:
-        print(f"Error: {e}", flush=True)
-        time.sleep(5)
+    return jsonify({"message": "Note added!"})
+
+@app.route("/notes", methods=["GET"])
+def get_notes():
+    if not os.path.exists(FILE_PATH):
+        return jsonify([])
+
+    with open(FILE_PATH, "r") as f:
+        notes = f.readlines()
+
+    return jsonify([n.strip() for n in notes])
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000)
